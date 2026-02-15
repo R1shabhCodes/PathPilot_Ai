@@ -117,7 +117,7 @@ const ResumeBuilder: React.FC = () => {
       setAnalysis(result);
 
       // SAVE TO PROFILE
-      if (user && result.ats_score.total) {
+      if (user && result.ats_score?.total) {
         updateProfile({
           ...user,
           atsScore: result.ats_score.total,
@@ -126,9 +126,10 @@ const ResumeBuilder: React.FC = () => {
       }
 
       // Initialize Chat
+      const criticalKeywords = result.keyword_analysis?.critical?.slice(0, 2).map(k => k.keyword).join(', ') || 'keywords';
       setChatMessages([{
         role: 'assistant',
-        content: `I've analyzed your resume! Your ATS score is **${result.ats_score.total}%**. I found some gaps in ${result.keyword_analysis.critical.slice(0, 2).map(k => k.keyword).join(', ') || 'keywords'}. Ask me how to fix them!`
+        content: `I've analyzed your resume! Your ATS score is **${result.ats_score?.total || 0}%**. I found some gaps in ${criticalKeywords}. Ask me how to fix them!`
       }]);
     } catch (err) {
       console.error(err);
@@ -156,16 +157,16 @@ const ResumeBuilder: React.FC = () => {
     }
   };
 
-  const radialData = analysis ? [
+  const radialData = analysis?.ats_score?.total ? [
     { name: 'Total', value: analysis.ats_score.total, fill: '#4f46e5' }
   ] : [];
 
-  const radarData = analysis ? [
-    { subject: 'Keywords', A: analysis.ats_score.breakdown.keyword_relevance, fullMark: 30 },
-    { subject: 'Format', A: analysis.ats_score.breakdown.formatting, fullMark: 20 },
-    { subject: 'Impact', A: analysis.ats_score.breakdown.content_strength, fullMark: 20 },
-    { subject: 'Role', A: analysis.ats_score.breakdown.role_alignment, fullMark: 20 },
-    { subject: 'Complete', A: analysis.ats_score.breakdown.completeness, fullMark: 10 },
+  const radarData = analysis?.ats_score?.breakdown ? [
+    { subject: 'Keywords', A: analysis.ats_score.breakdown.keyword_relevance || 0, fullMark: 30 },
+    { subject: 'Format', A: analysis.ats_score.breakdown.formatting || 0, fullMark: 20 },
+    { subject: 'Impact', A: analysis.ats_score.breakdown.content_strength || 0, fullMark: 20 },
+    { subject: 'Role', A: analysis.ats_score.breakdown.role_alignment || 0, fullMark: 20 },
+    { subject: 'Complete', A: analysis.ats_score.breakdown.completeness || 0, fullMark: 10 },
   ] : [];
 
   return (
@@ -368,7 +369,7 @@ const ResumeBuilder: React.FC = () => {
                         </RadialBarChart>
                       </ResponsiveContainer>
                       <div className="absolute inset-0 flex items-center justify-center flex-col">
-                        <span className="text-3xl font-black dark:text-white">{analysis.ats_score.total}</span>
+                        <span className="text-3xl font-black dark:text-white">{analysis.ats_score?.total || 0}</span>
                       </div>
                     </div>
                     <div>
@@ -399,7 +400,7 @@ const ResumeBuilder: React.FC = () => {
               </div>
 
               {/* 2. ATS Killers (Alert) */}
-              {analysis.ats_score.ats_killers.length > 0 && (
+              {analysis.ats_score?.ats_killers && analysis.ats_score.ats_killers.length > 0 && (
                 <div className="bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30 p-6 rounded-[2rem]">
                   <div className="flex items-center gap-2 mb-3">
                     <AlertTriangle className="text-red-600" size={20} />
