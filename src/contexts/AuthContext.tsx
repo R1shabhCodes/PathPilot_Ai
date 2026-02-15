@@ -109,15 +109,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     const updateProfile = async (u: UserProfile) => {
-        if (!auth.currentUser) return;
+        console.log('[AuthContext] updateProfile called with:', u);
+        console.log('[AuthContext] auth.currentUser:', auth.currentUser);
+
+        // Always update local state, even in demo mode without Firebase auth
+        setUser(u);
+
+        // Only try to save to Firebase if user is authenticated
+        if (!auth.currentUser) {
+            console.log('[AuthContext] No Firebase auth, using demo mode - user set locally');
+            return;
+        }
 
         try {
             const userDocRef = doc(db, 'users', auth.currentUser.uid);
             await setDoc(userDocRef, u, { merge: true });
-            setUser(u);
+            console.log('[AuthContext] Profile saved to Firestore');
         } catch (error) {
-            console.error("Error updating profile:", error);
-            throw error;
+            console.error("[AuthContext] Error updating profile in Firestore:", error);
+            // Don't throw - we already set the user locally, so the demo still works
         }
     };
 

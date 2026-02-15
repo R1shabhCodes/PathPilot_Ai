@@ -11,7 +11,7 @@ declare global {
 }
 
 const Login: React.FC = () => {
-  const { user, login } = useUser();
+  const { user, login, updateProfile } = useUser();
   const navigate = useNavigate();
   const googleBtnRef = useRef<HTMLDivElement>(null);
   const [showDevLogin, setShowDevLogin] = useState(false);
@@ -40,23 +40,33 @@ const Login: React.FC = () => {
     }
   };
 
-  const processUserAndRedirect = (userData: any) => {
-    // Check if user already has saved preferences in local storage
-    const existingRaw = localStorage.getItem('user');
-    if (existingRaw) {
-      const existing = JSON.parse(existingRaw);
-      if (existing.email === userData.email) {
-        const merged = { ...existing, ...userData };
-        login(merged);
-        if (merged.targetRole) {
-          navigate('/dashboard');
-          return;
+  const processUserAndRedirect = async (userData: any) => {
+    console.log('[Login] processUserAndRedirect called with:', userData);
+    try {
+      // Check if user already has saved preferences in local storage
+      const existingRaw = localStorage.getItem('user');
+      console.log('[Login] Existing user from localStorage:', existingRaw);
+      if (existingRaw) {
+        const existing = JSON.parse(existingRaw);
+        if (existing.email === userData.email) {
+          const merged = { ...existing, ...userData };
+          console.log('[Login] Merged user data:', merged);
+          await updateProfile(merged);
+          console.log('[Login] updateProfile completed, navigating to dashboard');
+          if (merged.targetRole) {
+            navigate('/dashboard');
+            return;
+          }
         }
       }
-    }
 
-    login(userData);
-    navigate('/profile-setup');
+      console.log('[Login] Calling updateProfile with new user');
+      await updateProfile(userData);
+      console.log('[Login] updateProfile completed, navigating to profile-setup');
+      navigate('/profile-setup');
+    } catch (error) {
+      console.error('[Login] Error in processUserAndRedirect:', error);
+    }
   };
 
   const handleCredentialResponse = (response: any) => {
@@ -168,6 +178,7 @@ const Login: React.FC = () => {
 
               <button
                 onClick={() => {
+                  console.log('[Login] Demo button clicked');
                   const demoUser = {
                     name: 'Demo Developer',
                     email: 'demo@pathpilot.ai',
@@ -177,6 +188,7 @@ const Login: React.FC = () => {
                     graduationYear: '2025',
                     currentLevel: 'Intermediate' as const
                   };
+                  console.log('[Login] Demo user created:', demoUser);
                   processUserAndRedirect(demoUser);
                 }}
                 className="group w-full flex items-center justify-center gap-3 py-4 px-6 bg-brand-600 text-white rounded-2xl font-bold hover:bg-brand-700 transition-all shadow-lg shadow-brand-500/20 hover:-translate-y-0.5 active:scale-95"
