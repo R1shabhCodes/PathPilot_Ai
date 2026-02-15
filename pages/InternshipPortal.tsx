@@ -44,26 +44,34 @@ const InternshipPortal: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetchJobs(user).then(jobs => {
-      // Map generic JobService jobs to the rich ExtendedInternship format
-      const mapped: ExtendedInternship[] = jobs.map(j => ({
-        id: j.id,
-        company: j.company,
-        role: j.title,
-        type: j.title.toLowerCase().includes('intern') ? 'Internship' : 'Full-time',
-        location: j.location,
-        stipend: 'Competitive', // Defaults since API might not have it
-        skills: j.tags.slice(0, 4), // Limit to 4 tags
-        difficulty: 'Medium', // Default for MVP
-        eligibleYear: [2024, 2025, 2026],
-        postedDate: new Date(j.date).toLocaleDateString(),
-        deadline: 'Open',
-        isVerified: true,
-        applyLink: j.url
-      }));
-      setOpportunities(mapped);
-      setLoading(false);
-    });
+    fetchJobs(user)
+      .then(jobs => {
+        // Ensure jobs is always an array
+        const safeJobs = Array.isArray(jobs) ? jobs : [];
+        // Map generic JobService jobs to the rich ExtendedInternship format
+        const mapped: ExtendedInternship[] = safeJobs.map(j => ({
+          id: j.id,
+          company: j.company,
+          role: j.title,
+          type: j.title.toLowerCase().includes('intern') ? 'Internship' : 'Full-time',
+          location: j.location,
+          stipend: 'Competitive', // Defaults since API might not have it
+          skills: j.tags?.slice(0, 4) || [], // Limit to 4 tags, handle undefined
+          difficulty: 'Medium', // Default for MVP
+          eligibleYear: [2024, 2025, 2026],
+          postedDate: new Date(j.date).toLocaleDateString(),
+          deadline: 'Open',
+          isVerified: true,
+          applyLink: j.url
+        }));
+        setOpportunities(mapped);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error loading jobs:', error);
+        setOpportunities([]);
+        setLoading(false);
+      });
   }, [user]);
 
   // Local state for tracking interactions (simulating backend)
@@ -79,7 +87,7 @@ const InternshipPortal: React.FC = () => {
   const getMatchAnalysis = (opportunity: ExtendedInternship) => {
     if (!user) return { score: 0, missing: [], matches: [], status: 'Unknown', readiness: 'Unknown', color: 'gray' };
 
-    const userSkillsLower = user.skills.map(s => s.toLowerCase());
+    const userSkillsLower = (user.skills || []).map(s => s.toLowerCase());
     const requiredSkills = opportunity.skills;
 
     const matches = requiredSkills.filter(s => userSkillsLower.includes(s.toLowerCase()));
@@ -322,7 +330,7 @@ const InternshipPortal: React.FC = () => {
                           <span className="text-4xl font-black dark:text-white">{analysis.score}%</span>
                           <span className="text-xs font-bold text-gray-400 mb-2">Match</span>
                         </div>
-                        <p className="text-xs text-gray-500 font-medium">Based on {user?.skills.length} skills & batch</p>
+                        <p className="text-xs text-gray-500 font-medium">Based on {user?.skills?.length || 0} skills & batch</p>
                       </div>
 
                       <div className="w-full lg:w-auto flex flex-col gap-3">
