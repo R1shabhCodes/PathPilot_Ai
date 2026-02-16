@@ -144,12 +144,150 @@ Return JSON array with: id, title, xp, bonus.`,
   return JSON.parse(response.text || '[]');
 };
 
-export const analyzeResumeATS = async (resumeData: any, targetRole: string, jobDescription?: string, currentLevel?: string, industry?: string, fileData?: any): Promise<ATSAnalysis> => {
+export const analyzeResumeATS = async (
+  resumeData: any,
+  targetRole: string,
+  jobDescription: string = "NONE",
+  experienceLevel: string = "Junior",
+  industry: string = "Tech",
+  fileData?: { data: string; mimeType: string }
+): Promise<ATSAnalysis> => {
+
+  const systemPrompt = `
+    You are an expert ATS (Applicant Tracking System) analyst, professional resume writer, and technical recruiter.
+
+    Analyze the provided resume strictly from an ATS + recruiter screening perspective.
+    Be honest, decisive, and actionable. Avoid generic advice.
+
+    INPUT CONTEXT:
+    - TARGET_ROLE: ${targetRole}
+    - JOB_DESCRIPTION: ${jobDescription}
+    - EXPERIENCE_LEVEL: ${experienceLevel}
+    - INDUSTRY: ${industry}
+
+    Your output must strictly follow the JSON schema provided to populate the following sections:
+    
+    1. ATS SCORE: Current score, Projected score after fixes, Confidence level, and Top 3 factors lowering the score.
+    2. METRICS BREAKDOWN: Keywords, Role Alignment, Impact, Formatting, Completeness. Identify the Top 2 "ATS Killers".
+    3. HIGH-IMPACT FIXES: Rewrite weak bullets. Provide conservative vs aggressive options if needed (choose one best fit), explain WHY it works (quantification, keywords).
+    4. KEYWORD GAP ANALYSIS: Classify into Critical (Must-have), Important, and Nice-to-have. Suggest where to add them.
+    5. VERDICT: "Not ATS Ready", "Partially Ready", or "Interview Ready". Estimated time to fix.
+    6. RECRUITER REALITY CHECK: A blunt 1-2 line assessment of performance.
+  `;
+
+  let requestContents;
+
+  if (fileData) {
+    // Multimodal Request (File + Text)
+    requestContents = {
+      parts: [
+        {
+          inlineData: {
+            mimeType: fileData.mimeType,
+            data: fileData.data
+          }
+        },
+        {
+          text: systemPrompt
+        }
+      ]
+    };
+  } else {
+    // Text-only Request
+    requestContents = {
+      parts: [
+        {
+          text: `${systemPrompt}\n\nRESUME_TEXT:\n${JSON.stringify(resumeData)}`
+        }
+      ]
+    };
+  }
+
   const response = await ai.models.generateContent({
     model: "gemini-3-flash-preview",
-    contents: `Analyze this resume for ${targetRole}. ${JSON.stringify(resumeData)}`,
+    contents: requestContents,
     config: {
-      responseMimeType: "application/json"
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          ats_score: {
+            type: Type.OBJECT,
+            properties: {
+              total: { type: Type.NUMBER },
+              projected_score: { type: Type.STRING },
+              confidence: { type: Type.STRING, enum: ["High", "Medium", "Low"] },
+              breakdown: {
+                type: Type.OBJECT,
+                properties: {
+                  keyword_relevance: { type: Type.NUMBER },
+                  formatting: { type: Type.NUMBER },
+                  content_strength: { type: Type.NUMBER },
+                  role_alignment: { type: Type.NUMBER },
+                  completeness: { type: Type.NUMBER }
+                },
+                required: ["keyword_relevance", "formatting", "content_strength", "role_alignment", "completeness"]
+              },
+              summary: { type: Type.STRING },
+              top_factors: { type: Type.ARRAY, items: { type: Type.STRING } },
+              ats_killers: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["total", "projected_score", "confidence", "breakdown", "summary", "top_factors", "ats_killers"]
+          },
+          keyword_analysis: {
+            type: Type.OBJECT,
+            properties: {
+              critical: {
+                type: Type.ARRAY,
+                items: { type: Type.OBJECT, properties: { keyword: { type: Type.STRING }, frequency: { type: Type.STRING }, placement_suggestion: { type: Type.STRING } } }
+              },
+              important: {
+                type: Type.ARRAY,
+                items: { type: Type.OBJECT, properties: { keyword: { type: Type.STRING }, frequency: { type: Type.STRING }, placement_suggestion: { type: Type.STRING } } }
+              },
+              nice_to_have: {
+                type: Type.ARRAY,
+                items: { type: Type.OBJECT, properties: { keyword: { type: Type.STRING }, frequency: { type: Type.STRING }, placement_suggestion: { type: Type.STRING } } }
+              },
+            },
+            required: ["critical", "important", "nice_to_have"]
+          },
+          bullet_improvements: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                original: { type: Type.STRING },
+                improved: { type: Type.STRING },
+                status: { type: Type.STRING, enum: ["Weak", "Average", "Strong"] },
+                improvement_type: { type: Type.STRING },
+                rewrite_mode: { type: Type.STRING, enum: ["Conservative", "Aggressive"] },
+                why_it_works: { type: Type.ARRAY, items: { type: Type.STRING } },
+                issue_note: { type: Type.STRING }
+              },
+              required: ["original", "improved", "status", "why_it_works"]
+            }
+          },
+          formatting_feedback: {
+            type: Type.OBJECT,
+            properties: {
+              issues: { type: Type.ARRAY, items: { type: Type.STRING } },
+              suggestions: { type: Type.ARRAY, items: { type: Type.STRING } }
+            }
+          },
+          verdict: {
+            type: Type.OBJECT,
+            properties: {
+              status: { type: Type.STRING, enum: ["Not ATS Ready", "Partially Ready", "Interview Ready"] },
+              reasons: { type: Type.ARRAY, items: { type: Type.STRING } },
+              time_to_fix: { type: Type.STRING }
+            },
+            required: ["status", "reasons", "time_to_fix"]
+          },
+          recruiter_reality_check: { type: Type.STRING }
+        },
+        required: ["ats_score", "keyword_analysis", "bullet_improvements", "verdict", "recruiter_reality_check"]
+      }
     }
   });
 
