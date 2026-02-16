@@ -298,7 +298,7 @@ const ResumeBuilder: React.FC = () => {
                 </h3>
               </div>
               <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                {analysis.bullet_improvements.map((item, idx) => (
+                {(analysis.bullet_improvements || []).map((item, idx) => (
                   <div key={idx} className="space-y-2">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
@@ -323,7 +323,7 @@ const ResumeBuilder: React.FC = () => {
                         <p className="text-[10px] font-black text-brand-600 uppercase mb-2">Optimized</p>
                         <p className="text-sm font-bold text-brand-900 dark:text-brand-300 leading-relaxed">{item.improved}</p>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          {item.why_it_works.map((reason, rIdx) => (
+                          {(item.why_it_works || []).map((reason, rIdx) => (
                             <span key={rIdx} className="text-[9px] font-bold text-brand-500 bg-white dark:bg-slate-900 px-2 py-1 rounded border border-brand-100 dark:border-brand-900/30 flex items-center gap-1">
                               <CheckCircle2 size={8} /> {reason}
                             </span>
@@ -437,7 +437,7 @@ const ResumeBuilder: React.FC = () => {
                       <ShieldAlert size={12} /> Critical (Must Have)
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {analysis.keyword_analysis.critical.length > 0 ? (
+                      {analysis.keyword_analysis?.critical && analysis.keyword_analysis.critical.length > 0 ? (
                         analysis.keyword_analysis.critical.map(k => (
                           <div key={k.keyword} className="px-3 py-2 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-900/20 rounded-xl text-xs font-bold flex flex-col">
                             <span>{k.keyword}</span>
@@ -456,7 +456,7 @@ const ResumeBuilder: React.FC = () => {
                       <AlertCircle size={12} /> Important
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {analysis.keyword_analysis.important.map(k => (
+                      {(analysis.keyword_analysis?.important || []).map(k => (
                         <div key={k.keyword} className="px-3 py-1.5 bg-orange-50 dark:bg-orange-900/10 text-orange-600 dark:text-orange-400 border border-orange-100 dark:border-orange-900/20 rounded-xl text-xs font-bold">
                           {k.keyword}
                         </div>
@@ -479,7 +479,7 @@ const ResumeBuilder: React.FC = () => {
                   </div>
                 </div>
                 <ul className="space-y-2">
-                  {analysis.verdict.reasons.map((r, i) => (
+                  {(analysis.verdict?.reasons || []).map((r, i) => (
                     <li key={i} className="text-sm font-medium text-gray-600 dark:text-gray-400 flex gap-2">
                       <CheckCircle2 size={16} className="text-green-500 flex-shrink-0" /> {r}
                     </li>
