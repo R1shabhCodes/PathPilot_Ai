@@ -362,7 +362,7 @@ const ResumeBuilder: React.FC = () => {
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border dark:border-slate-800 shadow-sm relative overflow-hidden">
                   <h3 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs mb-4">ATS Score & Projection</h3>
                   <div className="flex items-center gap-6">
-                    <div className="h-32 w-32 relative flex-shrink-0">
+                    <div className="h-32 w-32 relative flex-shrink-0 min-h-[128px] min-w-[128px]">
                       <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart innerRadius="80%" outerRadius="100%" barSize={15} data={radialData} startAngle={90} endAngle={-270}>
                           <RadialBar background dataKey="value" cornerRadius={10} />
@@ -386,7 +386,7 @@ const ResumeBuilder: React.FC = () => {
                 {/* Breakdown Radar */}
                 <div className="bg-white dark:bg-slate-900 p-6 rounded-[2rem] border dark:border-slate-800 shadow-sm">
                   <h3 className="font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest text-xs mb-2">Metrics Breakdown</h3>
-                  <div className="h-40 w-full text-xs">
+                  <div className="h-40 w-full text-xs min-h-[160px]">
                     <ResponsiveContainer width="100%" height="100%">
                       <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
                         <PolarGrid stroke="#e5e7eb" />

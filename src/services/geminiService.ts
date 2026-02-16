@@ -152,7 +152,16 @@ export const analyzeResumeATS = async (resumeData: any, targetRole: string, jobD
       responseMimeType: "application/json"
     }
   });
-  return JSON.parse(response.text || '{}');
+
+  const text = response.text || '{}';
+  console.log("ATS Analysis Raw Response:", text); // DEBUG LOG
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Failed to parse ATS analysis JSON:", e);
+    return {} as ATSAnalysis;
+  }
 };
 
 export const chatWithResume = async (chatHistory: any[], analysis: ATSAnalysis, userMessage: string): Promise<string> => {
