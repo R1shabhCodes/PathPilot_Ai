@@ -374,10 +374,10 @@ const ResumeBuilder: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-gray-400 uppercase tracking-wide">Potential</p>
-                      <p className="text-2xl font-black text-green-500">{analysis.ats_score.projected_score}</p>
+                      <p className="text-2xl font-black text-green-500">{analysis.ats_score?.projected_score || 0}</p>
                       <div className="mt-2 flex items-center gap-1.5 px-2 py-1 bg-gray-100 dark:bg-slate-800 rounded-lg w-fit">
                         <ShieldAlert size={10} className="text-gray-500" />
-                        <span className="text-[10px] font-bold text-gray-500 uppercase">{analysis.ats_score.confidence} Confidence</span>
+                        <span className="text-[10px] font-bold text-gray-500 uppercase">{analysis.ats_score?.confidence || 'N/A'} Confidence</span>
                       </div>
                     </div>
                   </div>
@@ -420,7 +420,7 @@ const ResumeBuilder: React.FC = () => {
               <div className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 p-6 rounded-[2rem] shadow-xl">
                 <h3 className="font-black text-brand-400 dark:text-brand-600 uppercase tracking-widest text-xs mb-2">Recruiter Reality Check</h3>
                 <p className="text-lg font-bold leading-relaxed italic">
-                  "{analysis.recruiter_reality_check}"
+                  "{analysis.recruiter_reality_check || 'Analysis in progress...'}"
                 </p>
               </div>
 
@@ -471,11 +471,11 @@ const ResumeBuilder: React.FC = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Final Verdict</p>
-                    <h3 className="text-2xl font-black dark:text-white">{analysis.verdict.status}</h3>
+                    <h3 className="text-2xl font-black dark:text-white">{analysis.verdict?.status || 'Analyzing...'}</h3>
                   </div>
                   <div className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700">
                     <Clock size={16} className="text-brand-600" />
-                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Est. Fix Time: {analysis.verdict.time_to_fix}</span>
+                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300">Est. Fix Time: {analysis.verdict?.time_to_fix || 'TBD'}</span>
                   </div>
                 </div>
                 <ul className="space-y-2">
