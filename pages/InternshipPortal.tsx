@@ -44,31 +44,36 @@ const InternshipPortal: React.FC = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetchJobs(user)
+
+    // Wrap in Promise.resolve to handle ANY rejection scenario
+    Promise.resolve(fetchJobs(user))
       .then(jobs => {
-        // Ensure jobs is always an array
-        const safeJobs = Array.isArray(jobs) ? jobs : [];
+        // Triple safety: ensure jobs is always an array
+        const safeJobs = Array.isArray(jobs) && jobs ? jobs : [];
+
         // Map generic JobService jobs to the rich ExtendedInternship format
         const mapped: ExtendedInternship[] = safeJobs.map(j => ({
-          id: j.id,
-          company: j.company,
-          role: j.title,
-          type: j.title.toLowerCase().includes('intern') ? 'Internship' : 'Full-time',
-          location: j.location,
+          id: j.id || 'unknown',
+          company: j.company || 'Unknown Company',
+          role: j.title || 'Unknown Role',
+          type: j.title?.toLowerCase().includes('intern') ? 'Internship' : 'Full-time',
+          location: j.location || 'Remote',
           stipend: 'Competitive', // Defaults since API might not have it
           skills: j.tags?.slice(0, 4) || [], // Limit to 4 tags, handle undefined
           difficulty: 'Medium', // Default for MVP
           eligibleYear: [2024, 2025, 2026],
-          postedDate: new Date(j.date).toLocaleDateString(),
+          postedDate: j.date ? new Date(j.date).toLocaleDateString() : 'Recent',
           deadline: 'Open',
           isVerified: true,
-          applyLink: j.url
+          applyLink: j.url || '#'
         }));
+
         setOpportunities(mapped);
         setLoading(false);
       })
       .catch(error => {
         console.error('Error loading jobs:', error);
+        // Always set empty array on ANY error
         setOpportunities([]);
         setLoading(false);
       });
