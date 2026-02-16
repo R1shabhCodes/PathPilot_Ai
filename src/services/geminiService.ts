@@ -9,7 +9,7 @@ export const generateDynamicRoadmap = async (
   role: string
 ): Promise<RoadmapData> => {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-1.5-flash",
     contents: `You are an expert curriculum architect. Generate a complete skill roadmap for the job role: "${role}", inspired by roadmap.sh.
 
     This roadmap must:
@@ -109,7 +109,7 @@ export const generateDynamicRoadmap = async (
 
 export const getCareerAdvice = async (history: { role: string; content: string }[], profile: UserProfile) => {
   const chat = ai.chats.create({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-1.5-flash',
     config: {
       systemInstruction: `You are PathPilot AI, a personalized career advisor. Help the student with placement strategies.`,
     }
@@ -121,7 +121,7 @@ export const getCareerAdvice = async (history: { role: string; content: string }
 
 export const generatePrepPlan = async (targetRole: string, days: number, currentLevel: string): Promise<any> => {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-1.5-flash",
     contents: `Generate a ${days}-day gamified quest for "${targetRole}" (${currentLevel} level).
 
 Return JSON with: questName, mainObjective, dailyQuests (5-7 tasks with id, title, xp, bonus), bossBattle (name, requirements, rewards), debuffs (title, desc, fix).`,
@@ -134,7 +134,7 @@ Return JSON with: questName, mainObjective, dailyQuests (5-7 tasks with id, titl
 
 export const generateDailyQuests = async (targetRole: string, dayNumber: number, currentLevel: string): Promise<any[]> => {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-1.5-flash",
     contents: `Generate 5 daily quests for Day ${dayNumber} of ${targetRole} prep (${currentLevel} level).
 
 Return JSON array with: id, title, xp, bonus.`,
@@ -147,7 +147,7 @@ Return JSON array with: id, title, xp, bonus.`,
 
 export const analyzeResumeATS = async (resumeData: any, targetRole: string, jobDescription?: string, currentLevel?: string, industry?: string, fileData?: any): Promise<ATSAnalysis> => {
   const response = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-1.5-flash",
     contents: `Analyze this resume for ${targetRole}. ${JSON.stringify(resumeData)}`,
     config: {
       responseMimeType: "application/json"
@@ -158,7 +158,7 @@ export const analyzeResumeATS = async (resumeData: any, targetRole: string, jobD
 
 export const chatWithResume = async (chatHistory: any[], analysis: ATSAnalysis, userMessage: string): Promise<string> => {
   const chat = ai.chats.create({
-    model: 'gemini-3-flash-preview',
+    model: 'gemini-1.5-flash',
     config: {
       systemInstruction: `You are a Resume Assistant. The user has received an ATS analysis. Help them improve their resume based on the analysis. Be specific and actionable.`,
     }
